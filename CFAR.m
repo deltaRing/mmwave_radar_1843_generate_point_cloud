@@ -1,32 +1,51 @@
 function [res, det] = CFAR(data)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CA-CFAR %%%%%%%%%%%%%%%%%%%%%%%%%
 %     data = abs(data);
-    res = [];
-    det = []; % 
+    det = [];
+    det_ = []; % 
     if length(size(data)) >= 3
         fprintf("2D data is required!");
         return;
     end
     M=size(data,1);
-    R=16;%²Î¿¼µ¥ÔªÊı
-    P=5; % ±£»¤µ¥ÔªÊı
-    L_slipper=R;%»¬´°³¤¶È
-    L_move=1;%»¬´°¼ä¸ô
-    L_num=floor((M-L_slipper)/L_move);%»¬´°´ÎÊı
-    res = zeros(M - L_slipper, size(data, 2)); % Ô¤ÏÈ·ÖÅäÊı¾İ´óĞ¡
+    R=16;%å‚è€ƒå•å…ƒæ•°
+    P=5; % ä¿æŠ¤å•å…ƒæ•°
+    L_slipper=R;%æ»‘çª—é•¿åº¦
+    L_move=1;%æ»‘çª—é—´éš”
+    ratio = 2.0;
+    remove_ratio = 0.5;
+    L_num=floor((M-L_slipper)/L_move);%æ»‘çª—æ¬¡æ•°
+    res = zeros(M - L_slipper, size(data, 2));
+    res_ = zeros(M - L_slipper, size(data, 2)); % é¢„å…ˆåˆ†é…æ•°æ®å¤§å°
     for jj = 1:size(data,2)
         for ii = 1:L_num
             start_idx = (ii-1)*L_move+1;
-            Z = abs(sum(data(start_idx:start_idx+R/2-P, jj))) / (R - 2 * P) + ...
-                abs(sum(data(start_idx + R/2 + P:start_idx+L_slipper, jj))) / (R - 2 * P);
-            if Z < abs(data(ii+R/2, jj))
-                res(ii,jj) = data(ii+R/2, jj);
-                if localmaxValDetect(data(ii+R/2), data(start_idx:start_idx+R))
-                    det = [det; ii + R, jj, data(ii+R/2)];
-                end
+            middle_idx_1 = start_idx+floor(R/2)-P;
+            middle_idx_2 = start_idx + floor(R/2) + P;
+            end_idx = start_idx + R;
+            index = [start_idx:middle_idx_1, middle_idx_2:end_idx];
+            Z = sum(abs(data(index, jj))) / (R - P * 2);
+            val = abs(data(ii+floor(R/2), jj));
+            if Z * ratio < val
+                res_(ii,jj) = data(ii+floor(R/2), jj);
+%                 det_ = [det_; ii + R, jj, data(ii+floor(R/2)), abs(data(ii+floor(R/2)))];
+%                 if localmaxValDetect(data(ii+floor(R/2)), data(start_idx:start_idx+R))
+%                 end
             end
         end
     end
+    
+    %% å»é™¤åå°„å¼ºåº¦è¿‡ä½çš„ç›®æ ‡
+    max_det = max(max(abs(res_)));
+    for ii = 1:size(res_, 1)
+        for jj = 1:size(res_, 2)
+            if abs(res_(ii, jj)) >= max_det * remove_ratio
+                det = [det; ii, jj, res_(ii, jj)];
+                res(ii, jj) = res_(ii, jj);
+            end
+        end
+    end
+    
 end
 
 function res = localmaxValDetect(val, win)
