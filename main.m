@@ -20,8 +20,9 @@ N=256;         %距离向FFT点数
 n_chirps=64;   %每帧脉冲数
 M=512;         %多普勒向FFT点数
 n_RX=4;        %RX天线通道数
+n_TX=3;        %TX天线通道数
 Q = 512;       %角度FFT
-tx = 2;        %发射天线数目
+tx = 3;        %发射天线数目
 rx = 4;        %接受天线数目
 fnumber = 256;
 PRI = 4e-3;
@@ -79,10 +80,10 @@ for xx = 1:fnumber-1
             data_radar_1 = squeeze(t_lvds_data(rx_select_tx * rx - 3, :, :));   %RX1
             data_radar_2 = squeeze(t_lvds_data(rx_select_tx * rx - 2, :, :));   %RX2
             data_radar_3 = squeeze(t_lvds_data(rx_select_tx * rx - 1, :, :));   %RX3
-            data_radar_4 = squeeze(t_lvds_data(rx_select_tx * rx, :, :));   %RX4
+            data_radar_4 = squeeze(t_lvds_data(rx_select_tx * rx, :, :));       %RX4
         end
-        
-        data_tx(:, :, ttxx) = data_radar_1(:,7:end) - data_radar_1(:,1:end-6);
+        temp_data = squeeze(t_lvds_data(ttxx * rx - 3, :, :));          % 采用RX1
+        data_tx(:, :, ttxx) = temp_data(:,1:end-8) - temp_data(:,9:end);
     end
    
     data_radar_1 = data_radar_1(:,1:end-8) - data_radar_1(:,9:end);
