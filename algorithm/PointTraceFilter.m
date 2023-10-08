@@ -24,12 +24,12 @@ for ii = size(new_detect_res, 1):-1:1
     if ii == 1
         break % 如果数组只有一个目标 直接跳过
     end
-    if confirm_list
+    if confirm_list(ii)
         continue % 如果确认删除 跳过
     end
     current_tar = new_detect_res(ii, :); % 先获取该点
     for jj = ii-1:-1:1
-        if confirm_list
+        if confirm_list(jj)
             continue;
         end
         temp_tar = new_detect_res(ii, :); % 计算距离
