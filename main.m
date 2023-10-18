@@ -66,7 +66,7 @@ for xx = 1:fnumber-1
     
     t_lvds_data = [];
     for tr = 1:tx * rx
-        t_lvds_data(tr, :, :) = lvds_data((tr - 1) * fnumber+1:tr * fnumber, :);
+        t_lvds_data(tr, :, :) = lvds_data((tr - 1) * n_samples+1:tr * n_samples, :);
     end
     
     tx_data = [];
