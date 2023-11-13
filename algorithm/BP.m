@@ -12,9 +12,22 @@ function img = BP(range_profiles, range_axis, lambda, antennas, txs, rxs, img_si
     img = zeros(img_size, img_size); % 对应距离？ 0---10m
     range_axis_x = linspace(-range_max / 2, range_max / 2, img_size);
     range_axis_y = linspace(0, range_max, img_size);
+    channels = zeros(img_size, img_size, txs * rxs);
     for ii = 1:txs
         for jj = 1:rxs
             ant = antennas((ii - 1) * rxs + jj, :); % 天线位置
+
+            % ------------------> 方位向
+            % | []
+            % |   |
+            % |  \|/   <-- 计算当前点tau（延迟时间） 叠加range_profile
+            % | [] ← 遍历下一个单元 （最后遍历下一个方位向）  
+            % |
+            % |
+            % |
+            % |
+            % \/ 距离向
+
             for iii = 1:img_size
                 for jjj = 1:img_size
                      range_cell = norm([range_axis_x(jjj) range_axis_y(iii)] - ant);
@@ -24,8 +37,15 @@ function img = BP(range_profiles, range_axis, lambda, antennas, txs, rxs, img_si
                      if length(kkk) > 1, kkk = kkk(1); end
                      range_profile = range_profiles(kkk, (ii - 1) * rxs + jj);
                      img(iii,jjj) = img(iii, jjj) + range_profile * exp(1j * 4 * pi * range_cell / lambda);
+                     channels(iii, jjj, ii * rxs + jj) = range_profile * exp(1j * 4 * pi * range_cell / lambda);
                 end
             end
         end
     end
+
+    % pcf
+    data_PCF_sign = sign(channels);
+    sigma_fai = std(data_PCF_sign,1,3);
+    EPCF = (1-sigma_fai).^2;
+    img = img.*EPCF;
 end
